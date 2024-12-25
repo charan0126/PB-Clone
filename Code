@@ -1,0 +1,1475 @@
+import pygame
+import copy
+
+pygame.init()
+
+disp_width, disp_height = 800, 800
+display = pygame.display.set_mode((disp_width, disp_height))
+game = True
+start = True
+page = 1
+
+boxes = []
+
+level = [[[1, 3], ['wall', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'emp', 'emp', 'goal', 'wall'],
+          ['wall', 'char', 'emp', 'emp', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall']],
+         [[1, 3], ['wall', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'emp', 'emp', 'bgoal', 'wall'],
+          ['wall', 'char', 'box', 'emp', 'wall'],
+          ['wall', 'emp', 'emp', 'goal', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall']],
+         [[1, 8], ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'bgoal', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'emp', 'wall', 'wall'],
+          ['wall', 'emp', 'emp', [['wall', 'wall', 'emp', 'wall', 'wall'],
+                                  ['wall', 'wall', 'emp', 'wall', 'wall'],
+                                  ['emp', 'emp', 'emp', 'wall', 'wall'],
+                                  ['wall', 'emp', 'emp', 'wall', 'wall'],
+                                  ['wall', 'wall', 'wall', 'wall', 'wall']], 'emp', 'emp', 'emp', 'wall', 'wall'],
+          ['wall', 'emp', 'box', 'wall', 'wall', 'wall', 'emp', 'wall', 'wall'],
+          ['wall', 'wall', 'emp', 'wall', 'wall', 'wall', 'emp', 'wall', 'wall'],
+          ['wall', 'emp', 'emp', 'wall', 'goal', 'emp', 'bgoal', 'wall', 'wall'],
+          ['wall', 'char', 'emp', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall']],
+[[4, 3], ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+            ['wall', 'emp', 'emp', 'emp', 'emp', 'goal', 'wall'],
+            ['wall', [['wall', 'emp', 'wall'], ['wall', 'emp', 'emp'], ['wall', 'wall', 'wall']], 'emp', 'box', 'char', 'emp', 'wall'],
+            ['wall', 'emp', 'emp', 'emp', 'emp', 'emp', 'wall'],
+            ['wall', 'emp', 'wall', 'wall', 'wall', 'wall', 'wall'],
+            ['wall', 'emp', 'emp', 'emp', 'bgoal', 'wall', 'wall'],
+ ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall']],
+         [[4, 6], ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+         ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'wall', 'emp', 'emp', 'emp', 'wall', 'wall', 'emp', 'wall', 'wall', 'wall'],
+          ['wall', 'wall', 'emp', 'emp', 'emp', 'wall', 'wall', 'emp', 'emp', 'wall', 'wall'],
+          ['wall', 'wall', [['wall', 'emp', 'wall'], ['emp', 'emp', 'emp'], ['wall', 'wall', 'wall']], 'emp', 'emp', 'wall', 'bgoal', 'emp', 'emp', 'wall', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'char', 'wall', 'wall', 'emp', 'wall', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'emp', 'wall', 'wall', 'emp', 'emp', 'goal', 'wall'],
+          ['wall', 'wall', 'wall', 'emp', 'emp', 'emp', 'emp', 'emp', 'wall', 'emp', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'emp', 'emp', 'emp', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall']],
+         [[4, 6], ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+         ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'emp', 'bgoal', 'emp', 'bgoal', [['wall', 'wall', 'wall'], ['wall', 'emp', 'emp'], ['wall', 'emp', 'wall']], 'box', 'emp', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'emp', 'emp', 'emp', 'emp', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'char', 'emp', 'emp', 'emp', 'wall'],
+          ['wall', 'goal', 'emp', 'emp', 'emp', 'emp', 'emp', 'emp', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall']],
+         [[2, 5], ['wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'bgoal', 'wall', 'wall'],
+          ['wall', 'goal', 'emp', 'emp', 'wall', 'wall'],
+          ['wall', 'wall', 'emp', [['emp', 'emp', 'emp'], ['emp', 'emp', 'emp'], ['emp', 'emp', 'emp']], 'emp', 'wall'],
+          ['wall', 'wall', 'char', 'wall', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall', 'wall']],
+         [[3, 6], ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'goal', 'wall'],
+          ['wall', 'wall', 'wall', 'emp', 'emp', 'emp', 'emp', 'bgoal', 'wall'],
+          ['wall', 'wall', 'wall', [['wall', 'emp', 'wall'], ['emp', 'emp', 'emp'], ['wall', 'wall', 'wall']], 'emp', 'box', 'emp', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'emp', 'emp', 'emp', 'emp', 'wall', 'wall'],
+          ['wall', 'wall', 'emp', 'char', 'emp', 'box', 'emp', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'emp', 'emp', 'emp', 'emp', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'emp', 'emp', 'emp', 'emp', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall']],
+         [[4,5], ['wall', 'wall','wall','wall','wall','wall','wall'],
+          ['wall', 'emp', 'emp', 'emp', 'emp', 'goal', 'wall'],
+          ['wall', 'emp', [['wall', 'wall', 'emp', 'wall', 'wall'],
+                           ['wall', 'wall', 'emp', 'wall', 'wall'],
+                           ['wall', 'bgoal', 'emp', 'emp', 'wall'],
+                           ['wall', 'emp', 'emp', 'emp', 'wall'],
+                           ['wall', 'wall', 'wall', 'wall', 'wall']], 'emp', 'emp', 'emp', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'wall', 'emp', 'emp'],
+          ['wall', 'emp', 'level', 'emp', 'char', 'emp', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'emp', 'emp', 'wall'],
+          ['wall', 'wall','wall','wall','wall','wall','wall']],
+         [[5, 3], ['wall', 'wall','wall','wall','emp','wall','wall', 'wall', 'wall'],
+          ['wall', 'emp', [['wall', 'wall', 'wall', 'wall', 'wall'],
+                           ['wall', 'emp', 'emp', 'emp', 'emp'],
+                           ['wall', 'emp', 'emp', 'emp', 'emp'],
+                           ['wall', 'emp', 'emp', 'emp', 'emp'],
+                           ['wall', 'wall', 'wall', 'wall', 'wall']], 'emp', 'emp', 'emp', 'emp', 'wall', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'emp', 'char', 'emp', 'wall', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'emp', 'emp', 'emp', 'wall', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'level', 'emp', 'emp', 'wall', 'wall'],
+          ['wall', 'emp', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'bgoal', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'goal', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'wall','wall','wall','wall','wall','wall', 'wall', 'wall']],
+         [[4, 5], ['wall', 'wall', 'wall', 'wall', 'emp', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'emp', 'wall', 'emp', 'emp', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'wall', 'wall', 'emp', 'emp', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'wall', 'wall', 'wall', 'emp', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'char', 'emp', 'emp', [['wall', 'wall', 'wall', 'wall', 'wall'],
+                                                               ['emp', 'emp','emp','emp', 'emp'],
+                                                               ['emp', 'emp','emp','emp', 'emp'],
+                                                               ['emp', 'emp','emp','emp', 'emp'],
+                                                               ['emp', 'emp','emp','emp', 'emp']], 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'emp', 'emp', 'emp', 'emp', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'level', 'emp', 'emp', 'bgoal', 'wall'],
+          ['wall', 'goal', 'emp', 'emp', 'emp', 'emp', 'emp', 'bgoal', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall']],
+          [[6, 5], ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'emp', 'wall', 'wall', 'wall', 'wall'],
+          ['wall', 'wall', 'wall', 'emp', 'emp', 'emp', [['emp', 'emp', 'emp', 'emp', 'emp'],
+                                                        ['emp', 'emp', 'emp', 'emp', 'emp'],
+                                                        ['emp', 'emp', 'emp', 'emp', 'emp'],
+                                                        ['emp', 'emp', 'emp', 'emp', 'emp'],
+                                                        ['emp', 'emp', 'emp', 'emp', 'emp']], 'emp', 'wall'],
+          ['wall', 'wall', 'wall', 'emp', 'emp', 'emp', 'emp', 'emp', 'wall'],
+          ['emp', 'emp', 'wall', 'emp', 'emp', 'level', 'char', 'emp', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'emp', 'emp', 'emp', 'emp', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'bgoal', 'emp', 'bgoal', 'emp', 'wall'],
+          ['wall', 'emp', 'emp', 'emp', 'emp', 'emp', 'emp', 'goal', 'wall'],
+          ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall']],
+          [[6, 3], ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+           ['wall', 'wall', 'wall', 'wall', 'wall', 'emp', 'emp', 'emp', 'wall'],
+           ['wall', 'wall', 'wall', 'emp', 'box', 'emp', 'char', 'emp', 'wall'],
+           ['wall', 'goal', 'bgoal', 'emp', 'wall', 'emp', 'emp', 'emp', 'wall'],
+           ['wall', 'emp', 'emp', 'emp', 'wall', 'emp', 'emp', 'emp', 'wall'],
+           ['wall', 'emp', 'emp', 'emp', 'wall', 'emp', 'emp', 'emp', 'wall'],
+           ['wall', 'wall', [['wall', 'emp', 'wall'],
+                             ['wall', 'emp', 'emp'],
+                             ['wall', 'wall', 'wall']], 'emp', 'wall', 'emp', 'clone', 'wall', 'wall'],
+           ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+           ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall']],
+         [[6, 6], ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+         ['wall', 'wall', 'goal', 'emp', 'bgoal', 'wall', 'emp', 'clone', 'wall'],
+         ['wall', 'wall', 'emp', 'emp', 'emp', 'emp', 'emp', 'emp', 'wall'],
+         ['wall', 'wall', 'emp', 'emp', 'emp', 'emp', 'emp', 'wall', 'wall'],
+         ['wall', 'wall', [['wall', 'wall', 'wall'],
+                           ['emp', 'wall', 'wall'],
+                           ['wall', 'emp', 'wall']], 'emp', 'emp', 'emp', 'emp', 'emp', 'wall'],
+         ['wall', 'wall', 'emp', 'emp', 'emp', 'emp', 'char', 'emp', 'wall'],
+         ['wall', 'emp', 'emp', 'emp', 'emp', 'emp', 'emp', 'emp', 'wall'],
+         ['wall', 'wall', 'wall', 'wall', 'wall', 'emp', 'wall', 'wall', 'wall'],
+         ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall']],
+         [[8, 5], ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+         ['wall', 'emp', 'emp', 'emp', 'emp', 'emp', 'wall', 'wall', 'wall'],
+         ['wall', 'emp', 'emp', 'emp', 'emp', 'bgoal', 'emp', 'goal', 'wall'],
+         ['wall', 'emp', 'emp', 'emp', 'emp', 'emp', 'wall', 'wall', 'wall'],
+         ['wall', 'emp', 'emp', 'level', 'emp', 'emp', 'wall', 'wall', 'char'],
+         ['wall', 'emp', 'emp', 'emp', 'emp', 'emp', 'wall', 'wall', 'wall'],
+         ['wall', 'emp', 'emp', 'emp', 'emp', 'emp', 'wall', 'wall', 'wall'],
+         ['wall', 'clonelevel', 'emp', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+         ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall']],
+         [[2, 5], ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall'],
+         ['emp', 'emp', 'emp', 'emp', 'wall', 'emp', 'emp', 'emp', 'wall'],
+         ['wall', 'emp', 'emp', 'emp', 'wall', 'emp', 'level', 'emp', 'wall'],
+         ['wall', 'emp', 'emp', 'emp', 'wall', 'emp', 'emp', 'emp', 'wall'],
+         ['emp', 'emp', 'char', 'emp', 'wall', 'emp', 'clonelevel', 'emp', 'wall'],
+         ['wall', 'emp', 'emp', 'emp', 'wall', 'emp', 'emp', 'emp', 'wall'],
+         ['wall', 'wall', 'wall', 'emp', 'wall', 'emp', 'clonelevel', 'emp', 'wall'],
+         ['wall', [['wall', 'wall', 'wall'],
+                   ['wall', 'goal', 'wall'],
+                   ['wall', 'emp', 'wall']], 'emp', 'emp', 'wall', 'emp', 'emp', 'emp', 'wall'],
+         ['wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall', 'wall']]]
+
+level1 = copy.deepcopy(level)
+levels2 = []
+
+table = []
+
+num = 0  # number of the level
+x, y = level[num][0][0], level[num][0][1]
+
+
+class Character:
+    def __init__(self, color, x1, y1, x2, y2):
+        self.color = color
+        self.x1 = x1
+        self.y1 = y1
+        self.y2 = y2
+        self.x2 = x2
+
+    def show(self, x1, y1, x2, y2):
+        pygame.draw.rect(display, self.color, pygame.Rect(x1, y1, x2, y2))
+
+    def move(self, x, y):
+        self.x1 += x
+        self.y1 += y
+
+
+def startgame():
+    global end, num, x, y, page
+    display.fill('black')
+    end = False
+    while not end:
+        print_text('CHOOSE THE LEVEL', 170, 85, 50, 'comicsansms')
+        pygame.display.update()
+        if page == 1:
+            for i in range(0, 4):
+                pygame.draw.rect(display, 'white', pygame.Rect(150 + i * 150, 300, 80, 80))
+                print_text(str(i + 1), 170 + i * 150, 300, 50, 'comicsansms', 'black')
+            for i in range(4, 8):
+                pygame.draw.rect(display, 'white', pygame.Rect(150 + (i - 4) * 150, 500, 80, 80))
+                print_text(str(i + 1), 170 + (i - 4) * 150, 500, 50, 'comicsansms', 'black')
+            pygame.draw.rect(display, 'white', pygame.Rect(450, 650, 150, 50))
+            print_text('Next page', 470, 660, 25, 'comicsansms', 'black')
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse = pygame.mouse.get_pos()
+                    if 300 <= mouse[1] <= 380:
+                        if 150 <= mouse[0] <= 230:
+                            num = 0
+                            end = True
+                        if 300 <= mouse[0] <= 380:
+                            num = 1
+                            end = True
+                        if 450 <= mouse[0] <= 530:
+                            num = 2
+                            end = True
+                        if 600 <= mouse[0] <= 680:
+                            num = 3
+                            end = True
+                    elif 500 <= mouse[1] <= 580:
+                        if 150 <= mouse[0] <= 230:
+                            num = 4
+                            end = True
+                        if 300 <= mouse[0] <= 380:
+                            num = 5
+                            end = True
+                        if 450 <= mouse[0] <= 530:
+                            num = 6
+                            end = True
+                        if 600 <= mouse[0] <= 680:
+                            num = 7
+                            end = True
+                    elif 650 <= mouse[1] <= 700 and 450 <= mouse[0] <= 600:
+                        page = 2
+                        display.fill('black')
+        if page == 2:
+            pygame.display.update()
+            for i in range(8, 12):
+                pygame.draw.rect(display, 'white', pygame.Rect(150 + (i - 8) * 150, 300, 80, 80))
+                print_text(str(i + 1), 170 + (i - 8) * 150, 300, 50, 'comicsansms', 'black')
+            for i in range(12, 16):
+                pygame.draw.rect(display, 'white', pygame.Rect(150 + (i - 12) * 150, 500, 80, 80))
+                print_text(str(i + 1), 170 + (i - 12) * 150, 500, 50, 'comicsansms', 'black')
+            pygame.draw.rect(display, 'white', pygame.Rect(150, 650, 170, 50))
+            print_text('Previous page', 155, 660, 25, 'comicsansms', 'black')
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse = pygame.mouse.get_pos()
+                    if 300 <= mouse[1] <= 380:
+                        if 150 <= mouse[0] <= 230:
+                            num = 8
+                            end = True
+                        if 300 <= mouse[0] <= 380:
+                            num = 9
+                            end = True
+                        if 450 <= mouse[0] <= 530:
+                            num = 10
+                            end = True
+                        if 600 <= mouse[0] <= 680:
+                            num = 11
+                            end = True
+                    elif 500 <= mouse[1] <= 580:
+                        if 150 <= mouse[0] <= 230:
+                            num = 12
+                            end = True
+                        if 300 <= mouse[0] <= 380:
+                            num = 13
+                            end = True
+                        if 450 <= mouse[0] <= 530:
+                            num = 14
+                            end = True
+                        if 600 <= mouse[0] <= 680:
+                            num = 15
+                            end = True
+                    elif 650 <= mouse[1] <= 700 and 150 <= mouse[0] <= 320:
+                        page = 1
+                        display.fill('black')
+    findtable()
+    findgoals()
+    x, y = level[num][0][0], level[num][0][1]
+
+
+def findgoals():
+    global boxes
+    boxes = []
+    for i in range(1, len(level[num])):
+        for j in range(len(level[num]) - 1):
+            if level[num][i][j] == 'bgoal':
+                boxes.append(('b', i, j))
+            if level[num][i][j] == 'goal':
+                boxes.append(('g', i, j))
+            if not type(level[num][i][j]) == str:
+                for i1 in range(len(level[num][i][j])):
+                    for j1 in range(len(level[num][i][j]) - 1):
+                        if level[num][i][j][i1][j1] == 'bgoal':
+                            boxes.append(['b', i, j, i1, j1])
+                        if level[num][i][j][i1][j1] == 'goal':
+                            boxes.append(['g', i, j, i1, j1])
+
+
+def findlevel():
+    for i in range(1, len(level[num])):
+        for j in range(len(level[num]) - 1):
+            if level[num][i][j] == 'level':
+                return [i, j]
+            if not type(level[num][i][j]) == str:
+                for i1 in range(len(level[num][i][j])):
+                    for j1 in range(len(level[num][i][j])):
+                        if level[num][i][j][i1][j1] == 'level':
+                            return [i, j, i1, j1]
+    return
+
+
+def findtable():
+    global table
+    for i in range(1, len(level[num])):
+        for j in range(len(level[num]) - 1):
+            if type(level[num][i][j]) != str:
+                table = [level[num][i][j], i, j]
+
+
+def levelinside(x, y, x1, y1, mode):
+    if mode == 0:
+        if x1 == 0:
+            if x != 0 and not level[num][x - 1][y] == 'wall':
+                level[num][x - 1][y] = 'level'
+                level[num][x][y][x1][y1] = 'char'
+                level[num][x][y][x1 + 1][y1] = 'emp'
+        elif level[num][x][y][x1 - 1][y1] == 'emp':
+            level[num][x][y][x1 - 1][y1] = 'level'
+            level[num][x][y][x1][y1] = 'char'
+            level[num][x][y][x1 + 1][y1] = 'emp'
+    if mode == 1:
+        if x1 == len(level[num][x][y]) - 1:
+            if x != len(level[num]) - 1 and not level[num][x + 1][y] == 'wall':
+                level[num][x + 1][y] = 'level'
+                level[num][x][y][x1][y1] = 'char'
+                level[num][x][y][x1 - 1][y1] = 'emp'
+        elif level[num][x][y][x1 + 1][y1] == 'emp':
+            level[num][x][y][x1 + 1][y1] = 'level'
+            level[num][x][y][x1][y1] = 'char'
+            level[num][x][y][x1 - 1][y1] = 'emp'
+    if mode == 2:
+        if y1 == len(level[num][x][y]) - 1:
+            if y != len(level[num]) - 1 and not level[num][x][y + 1] == 'wall':
+                level[num][x][y + 1] = 'level'
+                level[num][x][y][x1][y1] = 'char'
+                level[num][x][y][x1][y1 - 1] = 'emp'
+        elif level[num][x][y][x1][y1 + 1] == 'emp':
+            level[num][x][y][x1][y1 + 1]= 'level'
+            level[num][x][y][x1][y1] = 'char'
+            level[num][x][y][x1][y1 - 1] = 'emp'
+    if mode == 3:
+        if y1 == 0:
+            if y != 0 and not level[num][x][y - 1] == 'wall':
+                level[num][x][y - 1] = 'level'
+                level[num][x][y][x1][y1] = 'char'
+                level[num][x][y][x1][y1 + 1] = 'emp'
+        elif level[num][x][y][x1][y1 - 1] != 'wall':
+            level[num][x][y][x1][y1 - 1] = 'level'
+            level[num][x][y][x1][y1] = 'char'
+            level[num][x][y][x1][y1 + 1] = 'emp'
+
+
+def boxinside(x, y, x1, y1, mode, xchar, ychar):
+    if mode == 0:
+        if x1 == 0:
+            if x != 0 and not level[num][x - 1][y] == 'wall':
+                level[num][x - 1][y] = 'box'
+                level[num][x][y][x1][y1] = 'char'
+                level[num][x][y][x1 + 1][y1] = 'emp'
+        elif level[num][x][y][x1 - 1][y1] == 'emp':
+            level[num][x][y][x1 - 1][y1] = 'box'
+            level[num][x][y][x1][y1] = 'char'
+            level[num][x][y][x1 + 1][y1] = 'emp'
+    if mode == 1:
+        if x1 == len(level[num][x][y]) - 1:
+            if x != len(level[num]) - 1 and not level[num][x + 1][y] == 'wall':
+                level[num][x + 1][y] = 'box'
+                level[num][x][y][x1][y1] = 'char'
+                level[num][x][y][x1 - 1][y1] = 'emp'
+        elif level[num][x][y][x1 + 1][y1] == 'emp':
+            level[num][x][y][x1 + 1][y1] = 'box'
+            level[num][x][y][x1][y1] = 'char'
+            level[num][x][y][x1 - 1][y1] = 'emp'
+    if mode == 2:
+        if y1 == len(level[num][x][y]) - 1:
+            if y != len(level[num]) - 1 and not level[num][x][y + 1] == 'wall':
+                level[num][x][y + 1] = 'box'
+                level[num][x][y][x1][y1] = 'char'
+                level[num][x][y][x1][y1 - 1] = 'emp'
+                ychar += 1
+        elif level[num][x][y][x1][y1 + 1] == 'emp':
+            print('whdiw')
+            level[num][x][y][x1][y1 + 1] = 'box'
+            level[num][x][y][x1][y1] = 'char'
+            level[num][x][y][x1][y1 - 1] = 'emp'
+            ychar += 1
+    if mode == 3:
+        if y1 == 0:
+            if y != 0 and not level[num][x][y - 1] == 'wall':
+                level[num][x][y - 1] = 'box'
+                level[num][x][y][x1][y1] = 'char'
+                level[num][x][y][x1][y1 + 1] = 'emp'
+        elif level[num][x][y][x1][y1 - 1] == 'emp':
+            level[num][x][y][x1][y1 - 1] = 'box'
+            level[num][x][y][x1][y1] = 'char'
+            level[num][x][y][x1][y1 + 1] = 'emp'
+
+
+def final():
+    over = False
+    display.fill('black')
+    print_text('CONGRATULATONS! YOU WON!!!', 100, 370)
+    while not over:
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                over = True
+                pygame.quit()
+
+def matrix_find(matrix, value):
+    for row in matrix:
+        for element in row:
+            if element == value:
+                return True
+    return False
+
+
+def inside(xpos, ypos, x1, y1):
+    global num, x, y, level, game
+    entered = True
+    while entered:
+        for i in range(len(level[num][xpos][ypos])):
+            for j in range(len(level[num][xpos][ypos])):
+                if level[num][xpos][ypos][i][j] == 'char':
+                    guy.show(150 + j * (500 / len(level[num][xpos][ypos])),
+                             150 + i * (500 / len(level[num][xpos][ypos])),
+                             500 / len(level[num][xpos][ypos]),
+                             500 / len(level[num][xpos][ypos]))
+                for elem in boxes:
+                    if level[num][xpos][ypos][i][j] != 'char' and level[num][xpos][ypos][i][j] != 'level' and type(level[num][xpos][ypos][i][j]) == str:
+                        if len(elem) == 5 and elem[0] == 'b' and elem[3] == i and elem[4] == j:
+                            pygame.draw.rect(display, 'white', pygame.Rect(150 + j * (500 / len(level[num][xpos][ypos])),
+                                                     150 + i * (500 / len(level[num][xpos][ypos])),
+                                                     500 / len(level[num][xpos][ypos]),
+                                                     500 / len(level[num][xpos][ypos])))
+                            pygame.draw.rect(display, 'black', pygame.Rect(160 + j * (500 / len(level[num][xpos][ypos])),
+                                                     160 + i * (500 / len(level[num][xpos][ypos])),
+                                                     500 / len(level[num][xpos][ypos]) - 20,
+                                                     500 / len(level[num][xpos][ypos]) - 20))
+                            level[num][xpos][ypos][i][j] = 'bgoal'
+                    if len(elem) == 5 and elem[0] == 'g' and elem[3] == i and elem[4] == j:
+                        pygame.draw.rect(display, 'green', pygame.Rect(150 + j * (500 / len(level[num][xpos][ypos])),
+                                                 150 + i * (500 / len(level[num][xpos][ypos])),
+                                                 500 / len(level[num][xpos][ypos]),
+                                                 500 / len(level[num][xpos][ypos])))
+                        level[num][xpos][ypos][i][j] = 'goal'
+                if level[num][xpos][ypos][i][j] == 'emp':
+                    pygame.draw.rect(display, (152, 245, 255),
+                                     pygame.Rect(150 + j * (500 / len(level[num][xpos][ypos])),
+                                                 150 + i * (500 / len(level[num][xpos][ypos])),
+                                                 500 / len(level[num][xpos][ypos]),
+                                                 500 / len(level[num][xpos][ypos])))
+                elif level[num][xpos][ypos][i][j] == 'wall':
+                    pygame.draw.rect(display, (0, 0, 255),
+                                     pygame.Rect(150 + j * (500 / len(level[num][xpos][ypos])),
+                                                 150 + i * (500 / len(level[num][xpos][ypos])),
+                                                 500 / len(level[num][xpos][ypos]),
+                                                 500 / len(level[num][xpos][ypos])))
+                elif level[num][xpos][ypos][i][j] == 'box':
+                    pygame.draw.rect(display, 'black',
+                                     pygame.Rect(150 + j * (500 / len(level[num][xpos][ypos])),
+                                                 150 + i * (500 / len(level[num][xpos][ypos])),
+                                                 500 / len(level[num][xpos][ypos]),
+                                                 500 / len(level[num][xpos][ypos])))
+                    print_text('BOX', 155 + j * (500 / len(level[num][xpos][ypos])), 170 + i * (500 / len(level[num][xpos][ypos])),
+                               250 // len(level[num][xpos][ypos]))
+                elif level[num][xpos][ypos][i][j] == 'level':
+                    for i1 in range(1, len(level[num])):
+                        for j1 in range(len(level[num]) - 1):
+                            if level[num][i1][j1] == 'emp':
+                                pygame.draw.rect(display, (152, 245, 255),
+                                                 pygame.Rect(
+                                                     150 + j * (500 / len(level[num][xpos][ypos])) + j1 * 500 / len(
+                                                         level[num][xpos][ypos]) / len(level[num][1]),
+                                                     150 + i * (500 / len(level[num][xpos][ypos])) + (i1 - 1) * 500 / len(
+                                                         level[num][xpos][ypos]) / len(level[num][1]),
+                                                     500 / len(level[num][xpos][ypos]) / len(level[num][1]),
+                                                     500 / len(level[num][xpos][ypos]) / len(level[num][1])))
+                            elif level[num][i1][j1] == 'wall':
+                                pygame.draw.rect(display, (0, 0, 255),
+                                                 pygame.Rect(
+                                                     150 + j * (500 / len(level[num][xpos][ypos])) + j1 * 500 / len(
+                                                         level[num][xpos][ypos]) / len(level[num][1]),
+                                                     150 + i * (500 / len(level[num][xpos][ypos])) + (
+                                                                 i1 - 1) * 500 / len(
+                                                         level[num][xpos][ypos]) / len(level[num][1]),
+                                                     500 / len(level[num][xpos][ypos]) / len(level[num][1]),
+                                                     500 / len(level[num][xpos][ypos]) / len(level[num][1])))
+                            elif level[num][i1][j1] == 'char':
+                                guy.show(150 + j * (500 / len(level[num][xpos][ypos])) + j1 * 500 / len(
+                                                         level[num][xpos][ypos]) / len(level[num][1]),
+                                                     150 + i * (500 / len(level[num][xpos][ypos])) + (i1 - 1) * 500 / len(
+                                                         level[num][xpos][ypos]) / len(level[num][1]),
+                                                     500 / len(level[num][xpos][ypos]) / len(level[num][1]),
+                                                     500 / len(level[num][xpos][ypos]) / len(level[num][1]))
+                            elif level[num][i1][j1] == 'box':
+                                pygame.draw.rect(display, 'black',
+                                                 pygame.Rect(
+                                                     150 + j * (500 / len(level[num][xpos][ypos])) + j1 * 500 / len(
+                                                         level[num][xpos][ypos]) / len(level[num][1]),
+                                                     150 + i * (500 / len(level[num][xpos][ypos])) + (
+                                                                 i1 - 1) * 500 / len(
+                                                         level[num][xpos][ypos]) / len(level[num][1]),
+                                                     500 / len(level[num][xpos][ypos]) / len(level[num][1]),
+                                                     500 / len(level[num][xpos][ypos]) / len(level[num][1])))
+                            elif level[num][i1][j1] == 'goal':
+                                pygame.draw.rect(display, 'green',
+                                                 pygame.Rect(
+                                                     150 + j * (500 / len(level[num][xpos][ypos])) + j1 * 500 / len(
+                                                         level[num][xpos][ypos]) / len(level[num][1]),
+                                                     150 + i * (500 / len(level[num][xpos][ypos])) + (
+                                                                 i1 - 1) * 500 / len(
+                                                         level[num][xpos][ypos]) / len(level[num][1]),
+                                                     500 / len(level[num][xpos][ypos]) / len(level[num][1]),
+                                                     500 / len(level[num][xpos][ypos]) / len(level[num][1])))
+                            elif level[num][i1][j1] == 'bgoal':
+                                pygame.draw.rect(display, 'red',
+                                                 pygame.Rect(
+                                                     150 + j * (500 / len(level[num][xpos][ypos])) + j1 * 500 / len(
+                                                         level[num][xpos][ypos]) / len(level[num][1]),
+                                                     150 + i * (500 / len(level[num][xpos][ypos])) + (
+                                                             i1 - 1) * 500 / len(
+                                                         level[num][xpos][ypos]) / len(level[num][1]),
+                                                     500 / len(level[num][xpos][ypos]) / len(level[num][1]),
+                                                     500 / len(level[num][xpos][ypos]) / len(level[num][1])))
+                            elif type(level[num][i1][j1]) != str:
+                                pygame.draw.rect(display, 'purple',
+                                                 pygame.Rect(
+                                                     150 + j * (500 / len(level[num][xpos][ypos])) + j1 * 500 / len(
+                                                         level[num][xpos][ypos]) / len(level[num][1]),
+                                                     150 + i * (500 / len(level[num][xpos][ypos])) + (
+                                                             i1 - 1) * 500 / len(
+                                                         level[num][xpos][ypos]) / len(level[num][1]),
+                                                     500 / len(level[num][xpos][ypos]) / len(level[num][1]),
+                                                     500 / len(level[num][xpos][ypos]) / len(level[num][1])))
+
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                entered = False
+                game = False
+            if event.type == pygame.KEYDOWN:
+                if event.key != pygame.K_z:
+                    levels2.append((copy.deepcopy(level[num][1:]), xpos, ypos, x1, y1))
+                if event.key == pygame.K_w and ((xpos != 0 and level[num][xpos][ypos][x1 - 1][y1] != 'wall') or x1 == 0):
+                    if x1 == 0 and not level[num][xpos - 1][ypos] == 'wall':
+                        if level[num][xpos - 1][ypos] == 'box' and not level[num][xpos - 2][ypos] == 'wall':
+                            level[num][xpos][ypos][x1][y1] = 'emp'
+                            level[num][xpos - 1][ypos] = 'char'
+                            level[num][xpos - 2][ypos] = 'box'
+                            entered = False
+                        else:
+                            level[num][xpos][ypos][x1][y1] = 'emp'
+                            level[num][xpos - 1][ypos] = 'char'
+                            entered = False
+                        y = xpos - 1
+                        x = ypos
+                    elif level[num][xpos][ypos][x1 - 1][y1] == 'goal' and check_box():
+                        num += 1
+                        xpos, ypos = level[num][0][0], level[num][0][1]
+                        findgoals()
+                    elif level[num][xpos][ypos][x1 - 1][y1] == 'level':
+                        if level[num][xpos][ypos][x1 - 2][y1] == 'wall':
+                            entered = False
+                            y = len(level[num]) - 1
+                            x = (len(level[num]) - 1) // 2
+                        else:
+                            levelinside(xpos, ypos, x1 - 1, y1, 0)
+                            x1 -= 1
+                    elif level[num][xpos][ypos][x1 - 1][y1] == 'box':
+                        boxinside(xpos, ypos, x1 - 1, y1, 0, x1, y1)
+                        x1 -= 1
+                    elif level[num][xpos][ypos][x1 - 1][y1] == 'emp':
+                        level[num][xpos][ypos][x1 - 1][y1], level[num][xpos][ypos][x1][y1] = 'char', 'emp'
+                        x1 -= 1
+                elif event.key == pygame.K_s:
+                    if x1 == len(level[num][xpos][ypos]) - 1 and level[num][xpos + 1][ypos] != 'wall':
+                        if level[num][xpos + 1][ypos] == 'emp':
+                            level[num][xpos][ypos][x1][y1] = 'emp'
+                            level[num][xpos + 1][ypos] = 'char'
+                            entered = False
+                        elif level[num][xpos + 1][ypos] == 'level':
+                            level[num][xpos + 2][ypos] = 'level'
+                            level[num][xpos][ypos][x1][y1] = 'emp'
+                            level[num][xpos + 1][ypos] = 'char'
+                            entered = False
+                        y = xpos + 1
+                        x = ypos
+                    elif x1 != len(level[num][xpos][ypos]) - 1:
+                        print(x1)
+                        if x1 != len(level[num][xpos][ypos]) - 1 and level[num][xpos][ypos][x1 + 1][y1] == 'box':
+                            boxinside(xpos, ypos, x1, y1, 1, x1, y1)
+                        elif level[num][xpos][ypos][x1 + 1][y1] == 'level':
+                            if x1 == len(level[num][xpos][ypos]) - 2:
+                                level[num][xpos + 1][ypos] = 'level'
+                                level[num][xpos][ypos][x1 + 1][y1] = 'char'
+                                level[num][xpos][ypos][x1][y1] = 'emp'
+                                x1 += 1
+                            elif level[num][xpos][ypos][x1 + 2][y1] == 'wall' and level[num][1][len(level[num][1]) // 2] == 'emp':
+                                entered = False
+                                level[num][xpos][ypos][x1][y1] = 'emp'
+                                y = 1
+                                x = len(level[num][1]) // 2
+                                level[num][y][x] = 'char'
+                            elif level[num][xpos][ypos][x1 + 2][y1] != 'wall':
+                                levelinside(xpos, ypos, x1 + 1, y1, 1)
+                                x1 += 1
+                        else:
+                            level[num][xpos][ypos][x1 + 1][y1], level[num][xpos][ypos][x1][y1] = 'char', 'emp'
+                            x1 += 1
+                elif event.key == pygame.K_d and (y1 == len(level[num][xpos][ypos]) - 1 or level[num][xpos][ypos][x1][y1 + 1] != 'wall'):
+                    if y1 == len(level[num][xpos][ypos]) - 1 and ypos != len(level[num]) - 1:
+                        if level[num][xpos][ypos + 1] == 'box' and level[num][xpos][ypos + 2] != 'wall':
+                            level[num][xpos][ypos + 2] = 'box'
+                            level[num][xpos][ypos + 1] = 'char'
+                            level[num][xpos][ypos][x1][y1] = 'emp'
+                            y = xpos
+                            x = ypos + 1
+                            entered = False
+                        elif level[num][xpos][ypos + 1] == 'level':
+                            level[num][xpos][ypos + 2] = 'level'
+                            level[num][xpos][ypos + 1] = 'char'
+                            level[num][xpos][ypos][x1][y1] = 'emp'
+                            y = xpos
+                            x = ypos + 1
+                            entered = False
+                        elif level[num][xpos][ypos + 1] != 'wall':
+                            level[num][xpos][ypos + 1] = 'char'
+                            level[num][xpos][ypos][x1][y1] = 'emp'
+                            y = xpos
+                            x = ypos + 1
+                            entered = False
+
+                    elif level[num][xpos][ypos][x1][y1 + 1] == 'goal' and check_box():
+                        num += 1
+                        xpos, ypos = level[num][0][0], level[num][0][1]
+                        findgoals()
+                    elif level[num][xpos][ypos][x1][y1 + 1] == 'box':
+                        boxinside(xpos, ypos, x1, y1 + 1, 2, x1, y1)
+                    elif y1 != len(level[num][xpos][ypos]) - 2 and level[num][xpos][ypos][x1][y1 + 1] == 'level':
+                        if level[num][xpos][ypos][x1][y1 + 2] == 'wall':
+                            entered = False
+                            y = 0
+                            x = (len(level[num]) - 1) // 2
+                        else:
+                            levelinside(xpos, ypos, x1, y1 + 1, 2)
+                            y1 += 1
+                    elif y1 == len(level[num][xpos][ypos]) - 2 and level[num][xpos][ypos][x1][y1 + 1] == 'level':
+                        level[num][xpos][ypos + 1] = 'level'
+                        level[num][xpos][ypos][x1][y1 + 1] = 'char'
+                        level[num][xpos][ypos][x1][y1] = 'emp'
+                        y1 += 1
+                    else:
+                        level[num][xpos][ypos][x1][y1 + 1], level[num][xpos][ypos][x1][y1] = 'char', 'emp'
+                        y1 += 1
+                elif event.key == pygame.K_a and (level[num][xpos][ypos][x1][y1 - 1] != 'wall' or y1 == 0):
+                    if y1 == 0 and not level[num][xpos][ypos - 1] == 'wall':
+                        if level[num][xpos][ypos - 1] == 'box' and not level[num][xpos][ypos - 2] == 'wall':
+                            level[num][xpos][ypos][x1][y1] = 'emp'
+                            level[num][xpos][ypos - 1] = 'char'
+                            level[num][xpos][ypos - 2] = 'box'
+                            entered = False
+                        elif level[num][xpos][ypos - 1] == 'level' and not level[num][xpos][ypos - 2] == 'wall':
+                            level[num][xpos][ypos][x1][y1] = 'emp'
+                            level[num][xpos][ypos - 1] = 'char'
+                            level[num][xpos][ypos - 2] = 'level'
+                            entered = False
+                        else:
+                            level[num][xpos][ypos][x1][y1] = 'emp'
+                            level[num][xpos][ypos - 1] = 'char'
+                            entered = False
+                        y = xpos
+                        x = ypos - 1
+                    elif level[num][xpos][ypos][x1][y1 - 1] == 'level':
+                        if level[num][xpos][ypos][x1][y1 - 2] == 'wall':
+                            level[num][xpos][ypos][x1][y1] = 'emp'
+                            x = len(level[num]) - 2
+                            y = (len(level[num]) - 1) // 2 + 1
+                            level[num][y][x] = 'char'
+                            entered = False
+                        else:
+                            levelinside(xpos, ypos, x1, y1 - 1, 3)
+                            y1 -= 1
+                    elif level[num][xpos][ypos][x1][y1 - 1] == 'box':
+                        movebox(ypos, xpos - 1, 3)
+                    else:
+                        level[num][xpos][ypos][x1][y1 - 1], level[num][xpos][ypos][x1][y1] = 'char', 'emp'
+                        y1 -= 1
+                elif event.key == pygame.K_r:
+                    level = copy.deepcopy(level1)
+                    x, y = level[num][0][0], level[num][0][1]
+                    entered = False
+                elif event.key == pygame.K_z:
+                    if len(levels2[-1]) == 5:
+                        level[num] = [1] + levels2[-1][0]
+                        x1, y1 = levels2[-1][3], levels2[-1][4]
+                        levels2.pop(-1)
+                    else:
+                        level[num] = [1] + levels2[-1][0]
+                        y, x = levels2[-1][1], levels2[-1][2]
+                        levels2.pop(-1)
+                        entered = False
+        pygame.display.flip()
+
+
+def print_text(message, x, y, font_size=50, font_type='calibri', font_color=(255, 0, 0)):
+    font_type = pygame.font.SysFont(font_type, font_size)
+    text = font_type.render(message, True, font_color)
+    display.blit(text, (x, y))
+
+
+def check_box():
+    for elem in boxes:
+        if len(elem) == 3:
+            if elem[0] == 'b' and (level[num][elem[1]][elem[2]] != 'box' and level[num][elem[1]][elem[2]] != 'level' and type(level[num][elem[1]][elem[2]]) == str):
+                return False
+    for i in range(1, len(level[num])):
+        for j in range(0, len(level[num][1])):
+            if type(level[num][i][j]) != str:
+                for elem in boxes:
+                    if len(elem) == 5:
+                        if elem[0] == 'b' and (level[num][i][j][elem[3]][elem[4]] != 'box' and level[num][i][j][elem[3]][elem[4]] != 'level' and type(level[num][i][j][elem[3]][elem[4]]) == str):
+                            return False
+    levels2.clear()
+    return True
+
+
+def movelevel(xlevel, ylevel, mode):
+    global x, y
+    print('uwgd')
+    if mode == 0:
+        if level[num][y - 2][x] == 'emp' or level[num][y - 2][x] == 'bgoal':
+            level[num][y - 2][x] = 'level'
+            level[num][y - 1][x] = 'char'
+            level[num][y][x] = 'emp'
+            y -= 1
+        elif type(level[num][y - 2][x]) != str:
+            if level[num][y - 3][x] == 'emp':
+                level[num][y - 3][x] = level[num][y - 2][x]
+                level[num][y - 2][x] = 'level'
+                level[num][y - 1][x] = 'char'
+                level[num][y][x] = 'emp'
+                y -= 1
+            elif level[num][y - 3][x] == 'wall':
+                if level[num][xlevel - 1][ylevel][-1][len(level[num][xlevel - 1][ylevel]) // 2] == 'emp':
+                    level[num][xlevel - 1][ylevel][-1][len(level[num][xlevel - 1][ylevel]) // 2] = 'level'
+                    level[num][y - 1][x] = 'char'
+                    level[num][y][x] = 'emp'
+                    y -= 1
+    elif mode == 1:
+        if level[num][y + 2][x] == 'emp':
+            level[num][y + 2][x] = 'level'
+            level[num][y + 1][x] = 'char'
+            level[num][y][x] = 'emp'
+            y += 1
+        elif level[num][y + 2][x] == 'bgoal':
+            level[num][y + 2][x] = 'level'
+            level[num][y + 1][x] = 'char'
+            level[num][y][x] = 'emp'
+            y += 1
+        elif level[num][y + 2][x] == 'wall' and level[num][1][(len(level[num]) - 1) // 2] == 'emp':
+            level[num][y][x] = 'emp'
+            level[num][1][(len(level[num]) - 1) // 2] = 'char'
+            y = 1
+            x = (len(level[num]) - 1) // 2
+        elif type(level[num][y + 2][x]) != str:
+            if level[num][y + 3][x] == 'emp':
+                level[num][y + 3][x] = level[num][y + 2][x]
+                level[num][y + 2][x] = 'level'
+                level[num][y + 1][x] = 'char'
+                level[num][y][x] = 'emp'
+                y += 1
+            elif level[num][y + 3][x] == 'wall':
+                if level[num][xlevel + 1][ylevel][0][len(level[num][xlevel + 1][ylevel]) // 2] == 'emp':
+                    level[num][xlevel + 1][ylevel][0][len(level[num][xlevel + 1][ylevel]) // 2] = 'level'
+                    level[num][y + 1][x] = 'char'
+                    level[num][y][x] = 'emp'
+                    y += 1
+    elif mode == 2:
+        if level[num][y][x + 2] == 'emp':
+            level[num][y][x + 2] = 'level'
+            level[num][y][x + 1] = 'char'
+            level[num][y][x] = 'emp'
+            x += 1
+        elif level[num][y][x + 2] == 'bgoal':
+            level[num][y][x + 2] = 'level'
+            level[num][y][x + 1] = 'char'
+            level[num][y][x] = 'emp'
+            x += 1
+        elif level[num][y][x + 2] == 'wall' and level[num][((len(level[num]) - 1) // 2) + 1][0] == 'emp':
+            print('widh')
+            level[num][y][x] = 'emp'
+            level[num][((len(level[num]) - 1) // 2) + 1][0] = 'char'
+            x = 0
+            y = (len(level[num]) - 1) // 2 + 1
+        elif level[num][y][x + 2] == 'wall' and level[num][((len(level[num]) - 1) // 2) + 1][0] == 'clonelevel':
+            if level[num][((len(level[num]) - 1) // 2) + 1][1] == 'emp':
+                level[num][y][x] = 'emp'
+                level[num][((len(level[num]) - 1) // 2) + 1][1] = 'clonelevel'
+                level[num][((len(level[num]) - 1) // 2) + 1][0] = 'char'
+                x = 0
+                y = (len(level[num]) - 1) // 2 + 1
+        elif level[num][y][x + 2] == 'wall' and level[num][((len(level[num]) - 1) // 2) + 1][0] == 'level':
+            if level[num][((len(level[num]) - 1) // 2) + 1][1] == 'emp':
+                level[num][y][x] = 'emp'
+                level[num][((len(level[num]) - 1) // 2) + 1][1] = 'level'
+                level[num][((len(level[num]) - 1) // 2) + 1][0] = 'char'
+                x = 0
+                y = (len(level[num]) - 1) // 2 + 1
+        elif type(level[num][y][x + 2]) != str:
+            if level[num][y][x + 3] == 'emp':
+                level[num][y][x + 3] = level[num][y][x + 2]
+                level[num][y][x + 2] = 'level'
+                level[num][y][x + 1] = 'char'
+                level[num][y][x] = 'emp'
+                x += 1
+            elif level[num][y][x + 3] == 'wall':
+                if level[num][xlevel][ylevel + 1][(len(level[num][xlevel + 1][ylevel]) // 2) + 1][0] == 'emp':
+                    level[num][xlevel][ylevel + 1][(len(level[num][xlevel + 1][ylevel]) // 2) + 1][0] = 'level'
+                    level[num][y][x + 1] = 'char'
+                    level[num][y][x] = 'emp'
+                    x += 1
+    elif mode == 3:
+        if level[num][y][x - 2] == 'emp':
+            level[num][y][x - 2] = copy.deepcopy(level[num][y][x - 1])
+            level[num][y][x - 1] = 'char'
+            level[num][y][x] = 'emp'
+            x -= 1
+        elif type(level[num][y][x - 2]) != str:
+            if level[num][y][x - 3] == 'emp':
+                level[num][y][x - 3] = level[num][y][x - 2]
+                level[num][y][x - 2] = 'level'
+                level[num][y][x - 1] = 'char'
+                level[num][y][x] = 'emp'
+                x -= 1
+            elif level[num][y][x - 3] == 'wall':
+                if level[num][xlevel][ylevel - 1][len(level[num][xlevel][ylevel - 1]) // 2][len(level[num][xlevel][ylevel - 1]) - 1] == 'emp':
+                    level[num][xlevel][ylevel - 1][len(level[num][xlevel][ylevel - 1]) // 2][len(level[num][xlevel][ylevel - 1]) - 1] = 'level'
+                    level[num][y][x - 1] = 'char'
+                    level[num][y][x] = 'emp'
+                    x -= 1
+        elif level[num][y][xlevel - 1] == 'wall' and level[num][len(level[num][1]) // 2 + 1][len(level[num][1]) - 1] == 'emp':
+            level[num][y][x] = 'emp'
+            y = len(level[num][1]) // 2 + 1
+            x = len(level[num][1]) - 1
+            level[num][y][x] = 'char'
+
+
+def movebox(xbox, ybox, mode):
+    global x, y
+    if mode == 0:
+        if not (type(level[num][xbox - 1][ybox]) == str):
+            if (level[num][xbox - 2][ybox] == 'wall'):
+                if level[num][xbox - 1][ybox][-1][len(level[num][xbox - 1][ybox]) // 2] == 'emp':
+                    level[num][xbox][ybox] = 'char'
+                    level[num][xbox + 1][ybox] = 'emp'
+                    level[num][xbox - 1][ybox][-1][len(level[num][xbox - 1][ybox]) // 2] = 'box'
+        elif level[num][xbox - 1][ybox] == 'clone' and level[num][xbox - 2][ybox] == 'wall' and table[0][0][len(table[0]) // 2] == 'emp':
+            print('onwdni')
+            level[num][y][x] = 'emp'
+            level[num][table[1]][table[2]][0][len(table[0]) // 2] = 'box'
+            level[num][xbox][ybox] = 'char'
+        elif level[num][xbox - 1][ybox] != 'wall':
+            level[num][xbox - 1][ybox] = 'box'
+            level[num][xbox][ybox] = 'char'
+            level[num][xbox + 1][ybox] = 'emp'
+            y -= 1
+    if mode == 1:
+        if level[num][xbox + 1][ybox] == 'clone' and level[num][xbox + 2][ybox] == 'wall' and table[0][0][len(table[0]) // 2] == 'emp':
+            level[num][y][x] = 'emp'
+            level[num][table[1]][table[2]][0][len(table[0]) // 2] = 'box'
+            level[num][xbox][ybox] = 'char'
+            y += 1
+        elif level[num][xbox + 1][ybox] != 'wall':
+            level[num][xbox + 1][ybox] = 'box'
+            level[num][xbox][ybox] = 'char'
+            level[num][xbox - 1][ybox] = 'emp'
+            y += 1
+    if mode == 2:
+        if not (type(level[num][xbox][ybox + 1]) == str):
+            if (level[num][xbox][ybox + 2] == 'wall'):
+                if level[num][xbox][ybox + 1][len(level[num][xbox][ybox + 1]) // 2][0] == 'emp':
+                    level[num][xbox][ybox] = 'char'
+                    level[num][xbox][ybox - 1] = 'emp'
+                    level[num][xbox][ybox + 1][len(level[num][xbox][ybox + 1]) // 2][0] = 'box'
+                    x += 1
+            else:
+                level[num][xbox][ybox + 2] = copy.deepcopy(level[num][xbox][ybox + 1])
+                level[num][xbox][ybox + 1] = 'box'
+                level[num][xbox][ybox] = 'char'
+                level[num][xbox][ybox - 1] = 'emp'
+                x += 1
+        elif level[num][xbox][ybox + 1] != 'wall':
+            level[num][xbox][ybox + 1] = 'box'
+            level[num][xbox][ybox] = 'char'
+            level[num][xbox][ybox - 1] = 'emp'
+            x += 1
+    if mode == 3:
+        if not (type(level[num][xbox][ybox - 1]) == str):
+            if (level[num][xbox][ybox - 2] == 'wall'):
+                if level[num][xbox][ybox - 1][len(level[num][xbox][ybox - 1]) // 2][len(level[num][xbox][ybox - 1]) - 1] == 'emp':
+                    level[num][xbox][ybox] = 'char'
+                    level[num][xbox][ybox + 1] = 'emp'
+                    level[num][xbox][ybox - 1][len(level[num][xbox][ybox - 1]) // 2][len(level[num][xbox][ybox - 1]) - 1] = 'box'
+                    x -= 1
+            else:
+                level[num][xbox][ybox - 2] = copy.deepcopy(level[num][xbox][ybox - 1])
+                level[num][xbox][ybox - 1] = 'box'
+                level[num][xbox][ybox] = 'char'
+                level[num][xbox][ybox + 1] = 'emp'
+                x -= 1
+        elif level[num][xbox][ybox - 1] != 'wall':
+            level[num][xbox][ybox - 1] = 'box'
+            level[num][xbox][ybox] = 'char'
+            level[num][xbox][ybox + 1] = 'emp'
+            x -= 1
+
+
+guy = Character('yellow', 230, 230, 60, 60)
+
+while game:
+    if start:
+        startgame()
+    start = False
+    pygame.time.delay(100)
+    display.fill((0, 0, 0))
+    for i in range(1, len(level[num])):
+        for j in range(len(level[num]) - 1):
+            if level[num][i][j] == 'wall':
+                pygame.draw.rect(display, 'grey',
+                                 pygame.Rect(150 + j * (500 / len(level[num][1])), 150 + i * (500 / len(level[num][1])),
+                                             500 / len(level[num][1]),
+                                             500 / len(level[num][1])))
+            elif level[num][i][j] == 'emp':
+                pygame.draw.rect(display, (0, 0, 12),
+                                 pygame.Rect(150 + j * (500 / len(level[num][1])), 150 + i * (500 / len(level[num][1])),
+                                             500 / len(level[num][1]),
+                                             500 / len(level[num][1])))
+                for elem in boxes:
+                    if elem == ('b', i, j):
+                        pygame.draw.rect(display, 'white', pygame.Rect(150 + j * (500 / len(level[num][1])),
+                                                                       150 + i * (500 / len(level[num][1])),
+                                                                       500 / len(level[num][1]),
+                                                                       500 / len(level[num][1])))
+                        pygame.draw.rect(display, 'black', pygame.Rect(150 + j * (500 / len(level[num][1])),
+                                                                       150 + i * (500 / len(level[num][1])),
+                                                                       500 / len(level[num][1]),
+                                                                       500 / len(level[num][1])))
+                        level[num][i][j] = 'bgoal'
+                    if elem == ('g', i, j):
+                        pygame.draw.rect(display, 'green', pygame.Rect(150 + j * (500 / len(level[num][1])),
+                                                                       150 + i * (500 / len(level[num][1])),
+                                                                       500 / len(level[num][1]),
+                                                                       500 / len(level[num][1])))
+                        level[num][i][j] = 'goal'
+
+            elif level[num][i][j] == 'char':
+                guy.show(150 + j * (500 / len(level[num][1])),
+                         150 + i * (500 / len(level[num][1])),
+                         500 / len(level[num][1]),
+                         500 / len(level[num][1]))
+            elif level[num][i][j] == 'goal':
+                pygame.draw.rect(display, 'green',
+                                 pygame.Rect(150 + j * (500 / len(level[num][1])), 150 + i * (500 / len(level[num][1])),
+                                             500 / len(level[num][1]),
+                                             500 / len(level[num][1])))
+            elif level[num][i][j] == 'box':
+                pygame.draw.rect(display, 'black',
+                                 pygame.Rect(150 + j * (500 / len(level[num][1])), 150 + i * (500 / len(level[num][1])),
+                                             500 / len(level[num][1]),
+                                             500 / len(level[num][1])))
+                print_text('BOX', 155 + j * (500 / len(level[num][1])), 170 + i * (500 / len(level[num][1])), 250 // len(level[num][1]))
+            elif level[num][i][j] == 'bgoal':
+                pygame.draw.rect(display, 'white',
+                                 pygame.Rect(150 + j * (500 / len(level[num][1])), 150 + i * (500 / len(level[num][1])),
+                                             500 / len(level[num][1]),
+                                             500 / len(level[num][1])))
+                pygame.draw.rect(display, 'black',
+                                 pygame.Rect(160 + j * (500 / len(level[num][1])), 160 + i * (500 / len(level[num][1])),
+                                             500 / len(level[num][1]) - 20,
+                                             500 / len(level[num][1]) - 20))
+            elif level[num][i][j] == 'clone':
+                for k in range(1, len(level[num])):
+                    for m in range(len(level[num]) - 1):
+                        if type(level[num][k][m]) != str:
+                            for i1 in range(len(level[num][k][m])):
+                                for j1 in range(len(level[num][k][m])):
+                                    if level[num][k][m][i1][j1] == 'emp':
+                                        pygame.draw.rect(display, 'blue',
+                                                         pygame.Rect(150 + j * (500 / len(level[num][1])) + j1 * (
+                                                                     500 / len(level[num][1]) / len(level[num][k][m])),
+                                                                     150 + i * (500 / len(
+                                                                         level[num][1])) + i1 * 500 / len(
+                                                                         level[num][1]) / len(level[num][k][m]),
+                                                                     500 / len(level[num][1]) / len(level[num][k][m]),
+                                                                     500 / len(level[num][1]) / len(level[num][k][m])))
+                                    elif level[num][k][m][i1][j1] == 'wall':
+                                        pygame.draw.rect(display, (152, 245, 255),
+                                                         pygame.Rect(150 + j * (500 / len(level[num][1])) + j1 * (
+                                                                 500 / len(level[num][1]) / len(level[num][k][m])),
+                                                                     150 + i * (500 / len(
+                                                                         level[num][1])) + i1 * 500 / len(
+                                                                         level[num][1]) / len(level[num][k][m]),
+                                                                     500 / len(level[num][1]) / len(level[num][k][m]),
+                                                                     500 / len(level[num][1]) / len(level[num][k][m])))
+            elif level[num][i][j] == 'level':
+                for i1 in range(1, len(level[num])):
+                    for j1 in range(len(level[num]) - 1):
+                        if level[num][i1][j1] == 'emp':
+                            pygame.draw.rect(display, (152, 245, 255),
+                                             pygame.Rect(
+                                                 150 + j * (500 / len(level[num][1])) + j1 * 500 / len(
+                                                     level[num][1]) / len(level[num][1]),
+                                                 150 + i * (500 / len(level[num][1])) + (i1 - 1) * 500 / len(
+                                                     level[num][1]) / len(level[num][1]),
+                                                 500 / len(level[num][1]) / len(level[num][1]),
+                                                 500 / len(level[num][1]) / len(level[num][1])))
+                        elif level[num][i1][j1] == 'wall':
+                            pygame.draw.rect(display, (0, 0, 255),
+                                             pygame.Rect(
+                                                 150 + j * (500 / len(level[num][1])) + j1 * 500 / len(
+                                                     level[num][1]) / len(level[num][1]),
+                                                 150 + i * (500 / len(level[num][1])) + (i1 - 1) * 500 / len(
+                                                     level[num][1]) / len(level[num][1]),
+                                                 500 / len(level[num][1]) / len(level[num][1]),
+                                                 500 / len(level[num][1]) / len(level[num][1])))
+                        elif level[num][i][j] == 'char':
+                            guy.show(150 + j * (500 / len(level[num][1])) + j1 * 500 / len(
+                                level[num][1]) / len(level[num][1]),
+                                     150 + i * (500 / len(level[num][1])) + (i1 - 1) * 500 / len(
+                                         level[num][1]) / len(level[num][1]),
+                                     500 / len(level[num][1]) / len(level[num][1]),
+                                     500 / len(level[num][1]) / len(level[num][1]))
+                        elif level[num][i][j] == 'box':
+                            pygame.draw.rect(display, 'black',
+                                             pygame.Rect(
+                                                 150 + j * (500 / len(level[num][1])) + j1 * 500 / len(
+                                                     level[num][1]) / len(level[num][1]),
+                                                 150 + i * (500 / len(level[num][1])) + (i1 - 1) * 500 / len(
+                                                     level[num][1]) / len(level[num][1]),
+                                                 500 / len(level[num][1]) / len(level[num][1]),
+                                                 500 / len(level[num][1]) / len(level[num][1])))
+            elif level[num][i][j] == 'clonelevel':
+                for i1 in range(1, len(level[num])):
+                    for j1 in range(len(level[num]) - 1):
+                        if level[num][i1][j1] == 'emp':
+                            pygame.draw.rect(display, 'blue',
+                                             pygame.Rect(
+                                                 150 + j * (500 / len(level[num][1])) + j1 * 500 / len(
+                                                     level[num][1]) / len(level[num][1]),
+                                                 150 + i * (500 / len(level[num][1])) + (i1 - 1) * 500 / len(
+                                                     level[num][1]) / len(level[num][1]),
+                                                 500 / len(level[num][1]) / len(level[num][1]),
+                                                 500 / len(level[num][1]) / len(level[num][1])))
+                        elif level[num][i1][j1] == 'wall':
+                            pygame.draw.rect(display, (152, 245, 255),
+                                             pygame.Rect(
+                                                 150 + j * (500 / len(level[num][1])) + j1 * 500 / len(
+                                                     level[num][1]) / len(level[num][1]),
+                                                 150 + i * (500 / len(level[num][1])) + (i1 - 1) * 500 / len(
+                                                     level[num][1]) / len(level[num][1]),
+                                                 500 / len(level[num][1]) / len(level[num][1]),
+                                                 500 / len(level[num][1]) / len(level[num][1])))
+                        elif level[num][i][j] == 'char':
+                            guy.show(150 + j * (500 / len(level[num][1])) + j1 * 500 / len(
+                                level[num][1]) / len(level[num][1]),
+                                     150 + i * (500 / len(level[num][1])) + (i1 - 1) * 500 / len(
+                                         level[num][1]) / len(level[num][1]),
+                                     500 / len(level[num][1]) / len(level[num][1]),
+                                     500 / len(level[num][1]) / len(level[num][1]))
+                        elif level[num][i][j] == 'box':
+                            pygame.draw.rect(display, 'black',
+                                             pygame.Rect(
+                                                 150 + j * (500 / len(level[num][1])) + j1 * 500 / len(
+                                                     level[num][1]) / len(level[num][1]),
+                                                 150 + i * (500 / len(level[num][1])) + (i1 - 1) * 500 / len(
+                                                     level[num][1]) / len(level[num][1]),
+                                                 500 / len(level[num][1]) / len(level[num][1]),
+                                                 500 / len(level[num][1]) / len(level[num][1])))
+            elif type(level[num][i][j]) != str:
+                for i1 in range(len(level[num][i][j])):
+                    for j1 in range(len(level[num][i][j])):
+                        if level[num][i][j][i1][j1] == 'emp':
+                            pygame.draw.rect(display, (152, 245, 255),
+                                             pygame.Rect(150 + j * (500 / len(level[num][1])) + j1 * (500 / len(level[num][1]) / len(level[num][i][j])), 150 + i * (500 / len(level[num][1])) + i1 * 500 / len(level[num][1]) / len(level[num][i][j]),
+                                             500 / len(level[num][1]) / len(level[num][i][j]),
+                                             500 / len(level[num][1]) / len(level[num][i][j])))
+                        elif level[num][i][j][i1][j1] == 'wall':
+                            pygame.draw.rect(display, (0, 0, 255),
+                                             pygame.Rect(150 + j * (500 / len(level[num][1])) + j1 * (
+                                                         500 / len(level[num][1]) / len(level[num][i][j])),
+                                                         150 + i * (500 / len(level[num][1])) + i1 * 500 / len(
+                                                             level[num][1]) / len(level[num][i][j]),
+                                                         500 / len(level[num][1]) / len(level[num][i][j]),
+                                                         500 / len(level[num][1]) / len(level[num][i][j])))
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            game = False
+        if event.type == pygame.KEYDOWN:
+            if event.key != pygame.K_z:
+                levels2.append((copy.deepcopy(level[num][1:]), y, x))
+            if event.key == pygame.K_w:
+                if y == 1:
+                    level[num][y][x] = 'emp'
+                    if len(findlevel()) == 4:
+                        level[num][findlevel()[0]][findlevel()[1]][findlevel()[2] - 1][findlevel()[3]] = 'char'
+                        inside(findlevel()[0], findlevel()[1], findlevel()[2] - 1, findlevel()[3])
+                    else:
+                        y, x = findlevel()[0] - 1, findlevel()[1]
+                        if level[num][y][x] == 'emp':
+                            level[num][y][x] = 'char'
+                        elif type(level[num][y][x]) != str:
+                            level[num][y - 1][x] = level[num][y][x]
+                            level[num][y][x] = 'char'
+                elif level[num][y - 1][x] == 'goal' and check_box():
+                    num += 1
+                    x, y = level[num][0][0], level[num][0][1]
+                    findtable()
+                    findgoals()
+                elif level[num][y - 1][x] == 'level':
+                    movelevel(y - 1, x, 0)
+                elif level[num][y - 1][x] == 'box':
+                    movebox(y - 1, x, 0)
+                elif level[num][y - 1][x] == 'clonelevel':
+                    if level[num][y - 2][x] == 'wall':
+                        movelevel(y - 1, x, 2)
+                    else:
+                        level[num][y - 2][x] = 'clonelevel'
+                        level[num][y - 1][x] = 'char'
+                        level[num][y][x] = 'emp'
+                        y -= 1
+                elif level[num][y - 1][x] == 'clone':
+                    if level[num][y - 2][x] == 'wall':
+                        if table[0][-1][len(table[0]) // 2] == 'emp':
+                            level[num][y][x] = 'emp'
+                            level[num][table[1]][table[2]][-1][len(table[0]) // 2] = 'char'
+                            inside(table[1], table[2], len(table[0]) - 1, len(table[0]) // 2)
+                        if table[0][-1][len(table[0]) // 2] == 'box' and table[0][-2][len(table[0]) // 2] == 'emp':
+                            level[num][table[1]][table[2]][-2][len(table[0]) // 2] = 'box'
+                            level[num][y][x] = 'emp'
+                            level[num][table[1]][table[2]][-1][len(table[0]) // 2] = 'char'
+                            inside(table[1], table[2], len(table[0]) - 1, len(table[0]) // 2)
+                elif not type(level[num][y - 1][x]) == str:
+                    if y == 2:
+                        if len(findlevel()) == 4:
+                            level[num][findlevel()[0]][findlevel()[1]][findlevel()[2]][findlevel()[3] + 1] = level[num][y - 1][x]
+                            y -= 1
+                            level[num][y][x] = 'char'
+                            level[num][y + 1][x] = 'emp'
+                        else:
+                            level[num][y][x] = 'emp'
+                            y5, x5 = findlevel()[0] - 1, findlevel()[1]
+                            level[num][y5][x5] = level[num][y - 1][x]
+                            level[num][y - 1][x] = 'char'
+                            y -= 1
+                    elif level[num][y - 1][x][-1][len(level[num][y - 1][x]) // 2] == 'emp' and level[num][y - 2][x] == 'wall':
+                        level[num][y][x] = 'emp'
+                        level[num][y - 1][x][len(level[num][y - 1][x]) - 1][len(level[num][y - 1][x]) // 2] = 'char'
+                        inside(y - 1, x, len(level[num][y - 1][x]) - 1, len(level[num][y - 1][x]) // 2)
+                        if level[num][y][x] == 'goal' and check_box():
+                            num += 1
+                            x, y = level[num][0][0], level[num][0][1]
+                            findtable()
+                            findgoals()
+                    elif level[num][y - 1][x][-1][len(level[num][y - 1][x]) // 2] == 'level' and level[num][y - 2][x] == 'wall':
+                        level[num][y - 1][x][-2][len(level[num][y - 1][x]) // 2] = 'level'
+                        level[num][y][x] = 'emp'
+                        level[num][y - 1][x][-1][len(level[num][y - 1][x]) // 2] = 'char'
+                        inside(y - 1, x, len(level[num][y - 1][x]) - 1, len(level[num][y - 1][x]) // 2)
+                        if level[num][y][x] == 'goal' and check_box():
+                            num += 1
+                            x, y = level[num][0][0], level[num][0][1]
+                            findtable()
+                            findgoals()
+                    elif level[num][y - 2][x] != 'wall':
+                        level[num][y - 2][x] = copy.deepcopy(level[num][y - 1][x])
+                        level[num][y - 1][x] = 'char'
+                        level[num][y][x] = 'emp'
+                        y -= 1
+                        table[1] -= 1
+                elif level[num][y - 1][x] != 'wall':
+                    level[num][y - 1][x], level[num][y][x] = 'char', 'emp'
+                    y -= 1
+            elif event.key == pygame.K_s and level[num][y + 1][x] != 'wall':
+                if level[num][y + 1][x] == 'goal' and check_box():
+                    if num == 11:
+                        final()
+                    else:
+                        num += 1
+                        x, y = level[num][0][0], level[num][0][1]
+                        findgoals()
+                elif level[num][y + 1][x] == 'clone':
+                    if level[num][y + 2][x] == 'wall':
+                        if table[0][0][len(table[0]) // 2] == 'emp':
+                            level[num][y][x] = 'emp'
+                            level[num][table[1]][table[2]][0][len(table[0]) // 2] = 'char'
+                            inside(table[1], table[2], 0, len(table[0]) // 2)
+                        if table[0][0][len(table[0]) // 2] == 'box' and table[0][1][len(table[0]) // 2] == 'emp':
+                            level[num][table[1]][table[2]][1][len(table[0]) // 2] = 'box'
+                            level[num][y][x] = 'emp'
+                            level[num][table[1]][table[2]][0][len(table[0]) // 2] = 'char'
+                            inside(table[1], table[2], 0, len(table[0]) // 2)
+                elif level[num][y + 1][x] == 'box':
+                    movebox(y + 1, x, 1)
+                elif level[num][y + 1][x] == 'level':
+                    movelevel(y + 1, x, 1)
+                elif level[num][y + 1][x] == 'clonelevel':
+                    if level[num][y + 1][x] == 'wall':
+                        movelevel(y + 1, x, 2)
+                    else:
+                        level[num][y + 2][x] = 'clonelevel'
+                        level[num][y + 1][x] = 'char'
+                        level[num][y][x] = 'emp'
+                        y += 1
+                elif not type(level[num][y + 1][x]) == str:
+                    if level[num][y + 1][x][0][len(level[num][y + 1][x]) // 2] == 'emp' and (level[num][y + 2][
+                        x] == 'wall' or level[num][y + 2][x] == 'box'):
+                        level[num][y][x] = 'emp'
+                        level[num][y + 1][x][0][len(level[num][y + 1][x]) // 2] = 'char'
+                        inside(y + 1, x, 0, len(level[num][y + 1][x]) // 2)
+                        if level[num][y][x] == 'goal' and check_box():
+                            num += 1
+                            x, y = level[num][0][0], level[num][0][1]
+                            findtable()
+                            findgoals()
+                    elif level[num][y + 1][x][0][len(level[num][y + 1][x]) // 2] == 'box' and level[num][y][
+                        x + 2] == 'wall':
+                        level[num][y + 1][x][1][len(level[num][y + 1][x]) // 2] = 'box'
+                        level[num][y][x] = 'emp'
+                        level[num][y + 1][x][0][len(level[num][y + 1][x]) // 2] = 'char'
+                        level[num][y + 1][x][1][len(level[num][y + 1][x]) // 2] = 'box'
+                        inside(y + 1, x, len(level[num][y + 1][x]) // 2, 1)
+                        if level[num][y][x] == 'goal' and check_box():
+                            num += 1
+                            x, y = level[num][0][0], level[num][0][1]
+                            findtable()
+                            findgoals()
+                    elif level[num][y + 1][x][0][len(level[num][y + 1][x]) // 2] == 'level' and level[num][y + 2][
+                        x] == 'wall':
+                        level[num][y + 1][x][1][len(level[num][y + 1][x]) // 2] = 'level'
+                        level[num][y][x] = 'emp'
+                        level[num][y + 1][x][0][len(level[num][y + 1][x]) // 2] = 'char'
+                        inside(y + 1, x, 0, len(level[num][y + 1][x]) // 2)
+                        if level[num][y][x] == 'goal' and check_box():
+                            num += 1
+                            x, y = level[num][0][0], level[num][0][1]
+                            findtable()
+                            findgoals()
+                    elif level[num][y + 2][x] == 'level' and level[num][y + 3][x] != 'wall':
+                        level[num][y + 3][x] = 'level'
+                        level[num][y + 2][x] = copy.deepcopy(level[num][y + 1][x])
+                        level[num][y + 1][x] = 'char'
+                        level[num][y][x] = 'emp'
+                        y += 1
+                    elif level[num][y + 2][x] == 'emp' or level[num][y + 2][x] == 'bgoal':
+                        level[num][y + 2][x] = copy.deepcopy(level[num][y + 1][x])
+                        level[num][y + 1][x] = 'char'
+                        level[num][y][x] = 'emp'
+                        y += 1
+                        table[1] += 1
+                else:
+                    level[num][y + 1][x], level[num][y][x] = 'char', 'emp'
+                    y += 1
+            if event.key == pygame.K_d and ((x != len(level[num][y]) - 1 and level[num][y][x + 1] != 'wall') or x == len(level[num][y]) - 1):
+                if x == len(level[num][y]) - 1:
+                    if len(findlevel()) == 4 and level[num][findlevel()[0]][findlevel()[1]][findlevel()[2]][findlevel()[3] + 1] != 'wall':
+                        level[num][findlevel()[0]][findlevel()[1]][findlevel()[2]][findlevel()[3] + 1] = 'char'
+                        level[num][y][x] = 'emp'
+                        inside(findlevel()[0], findlevel()[1], findlevel()[2], findlevel()[3] + 1)
+                    elif level[num][findlevel()[0]][findlevel()[1] + 1] != 'wall':
+                        level[num][y][x] = 'emp'
+                        y, x = findlevel()[0], findlevel()[1] + 1
+                        level[num][y][x] = 'char'
+                elif level[num][y][x + 1] == 'goal' and check_box():
+                    if num == 11:
+                        final()
+                    else:
+                        num += 1
+                        x, y = level[num][0][0], level[num][0][1]
+                        findtable()
+                        findgoals()
+                elif level[num][y][x + 1] == 'box':
+                    movebox(y, x + 1, 2)
+                elif level[num][y][x + 1] == 'level':
+                    if level[num][y][x + 2] == 'wall' or level[num][y][x + 2] == 'emp':
+                        movelevel(y, x + 1, 2)
+                    elif level[num][y][x + 2] == 'clonelevel' and level[num][y][x + 3] == 'wall':
+                        if level[num][((len(level[num]) - 1) // 2) + 1][0] == 'emp':
+                            level[num][y][x] = 'emp'
+                            level[num][y][x + 1] = 'char'
+                            level[num][((len(level[num]) - 1) // 2) + 1][0] = 'level'
+                            x += 1
+                elif level[num][y][x + 1] == 'clonelevel':
+                    if level[num][y][x + 2] == 'wall':
+                        movelevel(y, x + 1, 2)
+                    elif level[num][y][x + 2] == 'clonelevel' and level[num][y][x + 3] == 'wall':
+                        if level[num][((len(level[num]) - 1) // 2) + 1][0] == 'emp':
+                            level[num][y][x] = 'emp'
+                            level[num][y][x + 1] = 'char'
+                            level[num][((len(level[num]) - 1) // 2) + 1][0] = 'clonelevel'
+                            x += 1
+                    else:
+                        level[num][y][x + 2] = 'clonelevel'
+                        level[num][y][x + 1] = 'char'
+                        level[num][y][x] = 'emp'
+                        x += 1
+                elif level[num][y][x + 1] == 'clone':
+                    if level[num][y][x + 2] == 'wall':
+                        if table[0][len(table[0]) // 2][0] == 'emp':
+                            level[num][y][x] = 'emp'
+                            print(level[num][table[1]][table[2]][len(table[0]) // 2][0])
+                            level[num][table[1]][table[2]][len(table[0]) // 2][0] = 'char'
+                            inside(table[1], table[2], len(table[0]) // 2, 0)
+                        if table[0][len(table[0]) // 2][0] == 'box' and table[0][len(table[0]) // 2][1] == 'emp':
+                            level[num][table[1]][table[2]][len(table[0]) // 2][1] = 'box'
+                            level[num][y][x] = 'emp'
+                            level[num][table[1]][table[2]][len(table[0]) // 2][0] = 'char'
+                            inside(table[1], table[2], len(table[0]) // 2, 0)
+                elif not type(level[num][y][x + 1]) == str:
+                    if level[num][y][x + 1][len(level[num][y][x + 1]) // 2][0] == 'emp' and level[num][y][x + 2] == 'wall':
+                        level[num][y][x] = 'emp'
+                        level[num][y][x + 1][len(level[num][y][x + 1]) // 2][0] = 'char'
+                        inside(y, x + 1, len(level[num][y][x + 1]) // 2, 0)
+                        if ('g', y, x) in boxes and check_box():
+                            num += 1
+                            x, y = level[num][0][0], level[num][0][1]
+                            findtable()
+                            findgoals()
+                    elif level[num][y][x + 1][len(level[num][y][x + 1]) // 2][0] == 'box' and level[num][y][x + 2] == 'wall':
+                        level[num][y][x + 1][len(level[num][y][x + 1]) // 2][1] = 'box'
+                        level[num][y][x] = 'emp'
+                        level[num][y][x + 1][len(level[num][y][x + 1]) // 2][0] = 'char'
+                        level[num][y][x + 1][len(level[num][y][x + 1]) // 2][1] = 'box'
+                        inside(y, x + 1, len(level[num][y][x + 1]) // 2, 0)
+                        if level[num][y][x] == 'goal' and check_box():
+                            num += 1
+                            x, y = level[num][0][0], level[num][0][1]
+                            findtable()
+                            findgoals()
+                    elif level[num][y][x + 1][len(level[num][y][x + 1]) // 2][0] == 'level' and level[num][y][x + 2] == 'wall':
+                        level[num][y][x + 1][len(level[num][y][x + 1]) // 2][1] = 'level'
+                        level[num][y][x] = 'emp'
+                        level[num][y][x + 1][len(level[num][y][x + 1]) // 2][0] = 'char'
+                        inside(y, x + 1, len(level[num][y][x + 1]) // 2, 0)
+                        if level[num][y][x] == 'goal' and check_box():
+                            num += 1
+                            x, y = level[num][0][0], level[num][0][1]
+                            findtable()
+                            findgoals()
+                    elif level[num][y][x + 2] != 'wall':
+                        level[num][y][x + 2] = copy.deepcopy(level[num][y][x + 1])
+                        level[num][y][x + 1] = 'char'
+                        level[num][y][x] = 'emp'
+                        x += 1
+                        table[2] += 1
+                else:
+                    level[num][y][x + 1], level[num][y][x] = 'char', 'emp'
+                    x += 1
+            elif event.key == pygame.K_a and (level[num][y][x - 1] != 'wall' or x == 0):
+                if x == 0:
+                    level[num][y][x] = 'emp'
+                    if len(findlevel()) == 4:
+                        level[num][findlevel()[0]][findlevel()[1]][findlevel()[2]][findlevel()[3] - 1] = 'char'
+                        inside(findlevel()[0], findlevel()[1], findlevel()[2], findlevel()[3] - 1)
+                    else:
+                        print('wuhb')
+                        y, x = findlevel()[0], findlevel()[1] - 1
+                        if level[num][y][x] == 'emp':
+                            level[num][y][x] = 'char'
+                        elif type(level[num][y][x]) != str:
+                            level[num][y][x - 1] = level[num][y][x]
+                            level[num][y][x] = 'char'
+                elif level[num][y][x - 1] == 'goal' and check_box():
+                    num += 1
+                    x, y = level[num][0][0], level[num][0][1]
+                    findtable()
+                    findgoals()
+                elif level[num][y][x - 1] == 'box':
+                    movebox(y, x - 1, 3)
+                elif level[num][y][x - 1] == 'level':
+                    movelevel(y, x - 1, 3)
+                elif level[num][y][x - 1] == 'clonelevel':
+                    if x == 1:
+                        level[num][y][x] = 'emp'
+                        if len(findlevel()) == 4:
+                            level[num][findlevel()[0]][findlevel()[1]][findlevel()[2]][findlevel()[3] - 1] = 'clonelevel'
+                            level[num][y][x - 1] = 'char'
+                        elif level[num][findlevel()[0]][findlevel()[1] - 1] != 'wall':
+                            level[num][y][x - 1] = 'char'
+                            level[num][findlevel()[0]][findlevel()[1] - 1] = 'clonelevel'
+                        x -= 1
+                    if level[num][y][x - 2] == 'wall' or level[num][y][x - 2] == 'emp':
+                        movelevel(y, x - 1, 3)
+                elif level[num][y][x - 1] == 'clone':
+                    if level[num][y][x - 2] == 'wall':
+                        if table[0][len(table[0]) // 2][-1] == 'emp':
+                            level[num][y][x] = 'emp'
+                            level[num][table[1]][table[2]][len(table[0]) // 2][-1] = 'char'
+                            inside(table[1], table[2], len(table[0]) // 2, len(table[0]))
+                        if table[0][len(table[0]) // 2][-1] == 'box' and table[0][len(table[0]) // 2][-2] == 'emp':
+                            level[num][table[1]][table[2]][len(table[0]) // 2][-2] = 'box'
+                            level[num][y][x] = 'emp'
+                            level[num][table[1]][table[2]][len(table[0]) // 2][-1] = 'char'
+                            inside(table[1], table[2], len(table[0]) // 2, len(table[0]))
+                elif not type(level[num][y][x - 1]) == str:
+                    if level[num][y][x - 1][len(level[num][y][x - 1]) // 2][len(level[num][y][x - 1]) - 1] == 'emp' and level[num][y][x - 2] == 'wall':
+                        level[num][y][x] = 'emp'
+                        level[num][y][x - 1][len(level[num][y][x - 1]) // 2][len(level[num][y][x - 1]) - 1] = 'char'
+                        inside(y, x - 1, len(level[num][y][x - 1]) // 2, len(level[num][y][x - 1]) - 1)
+                    elif level[num][y][x - 1][len(level[num][y][x - 1]) // 2][len(level[num][y][x - 1]) - 1] == 'box' and level[num][y][x - 2] == 'wall':
+                        level[num][y][x - 1][len(level[num][y][x - 1]) // 2][len(level[num][y][x - 1]) - 2] = 'box'
+                        level[num][y][x] = 'emp'
+                        level[num][y][x - 1][len(level[num][y][x - 1]) // 2][len(level[num][y][x - 1]) - 1] = 'char'
+                        inside(y, x - 1, len(level[num][y][x - 1]) // 2, len(level[num][y][x - 1]) - 1)
+                    elif level[num][y][x - 1][len(level[num][y][x - 1]) // 2][
+                                 len(level[num][y][x - 1]) - 1] == 'level' and level[num][y][x - 2] == 'wall':
+                        level[num][y][x - 1][len(level[num][y][x - 1]) // 2][len(level[num][y][x - 1]) - 2] = 'level'
+                        level[num][y][x] = 'emp'
+                        level[num][y][x - 1][len(level[num][y][x - 1]) // 2][len(level[num][y][x - 1]) - 1] = 'char'
+                        inside(y, x - 1, len(level[num][y][x - 1]) // 2, len(level[num][y][x - 1]) - 1)
+                    else:
+                        level[num][y][x - 2] = copy.deepcopy(level[num][y][x - 1])
+                        level[num][y][x - 1] = 'char'
+                        if matrix_find(level[num][y][x - 2], 'bgoal'):
+                            for k in range(len(boxes)):
+                                if len(boxes[k]) == 5:
+                                    boxes[k][2] -= 1
+                        level[num][y][x] = 'emp'
+                        table[2] -= 1
+                        x -= 1
+                else:
+                    level[num][y][x - 1], level[num][y][x] = 'char', 'emp'
+                    x -= 1
+
+            elif event.key == pygame.K_r:
+                level = copy.deepcopy(level1)
+                x, y = level[num][0][0], level[num][0][1]
+                levels2.clear()
+            elif event.key == pygame.K_z and len(levels2)!=0:
+                if len(levels2[-1]) == 3:
+                    level[num] = [1] + levels2[-1][0]
+                    y, x = levels2[-1][1], levels2[-1][2]
+                    levels2.pop(-1)
+                else:
+                    level[num] = [1] + levels2[-1][0]
+                    inside(levels2[-1][1], levels2[-1][2], levels2[-1][3], levels2[-1][4])
+        pygame.display.flip()
